@@ -1,0 +1,7 @@
+curl -X POST -H "Content-Type: application/json" -d '{"node_id": "node1"}' http://127.0.0.1:5000/nodes/register
+
+curl http://127.0.0.1:5000/mine_block/john123
+
+curl -X POST -H "Content-Type: application/json" -d '{"sender":"Alice","recipient":"Bob","amount":10}' http://127.0.0.1:5000/add_transaction/john123
+
+curl http://127.0.0.1:5000/nodes/resolve
