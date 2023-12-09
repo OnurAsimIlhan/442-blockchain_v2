@@ -96,11 +96,40 @@ class Blockchain:
 
 		return True
 
+class Node:
+    def __init__(self, node_id):
+        self.node_id = node_id
+        self.user = User()
 
+
+	
 app = Flask(__name__)
 users = {}
 
+efe = User()
+efe_id = "efe123"
+users[efe_id] = efe
 
+onur = User()
+onur_id = "onur123"
+users[onur_id] = onur
+
+adnan = User()
+adnan_id = "adnan123"
+users[adnan_id] = adnan
+
+# Example Node registration endpoint
+@app.route('/nodes/register', methods=['POST'])
+def register_node():
+    data = request.get_json()
+    node_id = data.get('node_id')
+    if node_id:
+        new_node = Node(node_id)
+        users[node_id] = new_node.user
+        return jsonify({'message': f'Node {node_id} registered successfully'}), 201
+    else:
+        return jsonify({'message': 'Node registration failed. Provide a valid node_id.'}), 400
+	
 @app.route('/mine_block/<user_id>', methods=['GET'])
 def mine_block(user_id):
 	user = users.get(user_id)
@@ -161,16 +190,31 @@ def add_transaction(user_id):
 	if not all(field in data for field in required_fields):
 		return 'Missing fields', 400
 
-	user = users.get(user_id)
-
-	if not user:
-		return jsonify({'message': 'User not found'}), 404
-
-	user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'])
-
-	response = {'message': 'Transaction added to current transactions'}
+	for node_id, node in users.items():
+		node.user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'])
+	response = {'message': 'Transaction broadcasted to all nodes'}
 	return jsonify(response), 201
+	
+	
+	#user = users.get(user_id)
 
+	#if not user:
+	#	return jsonify({'message': 'User not found'}), 404
 
-if __name__ == "__main__":
-	 app.run(host='127.0.0.1', port=5000)
+	#user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'])
+
+	#response = {'message': 'Transaction added to current transactions'}
+	#return jsonify(response), 201
+
+@app.route('/nodes/resolve', methods=['GET'])
+def resolve_conflicts():
+    for node_id, node in users.items():
+        node_chain = node.user.blockchain.chain
+        if not node.user.blockchain.chain_valid(node_chain):
+            # Resolve conflicts by replacing the chain with the longest valid chain
+            longest_chain = max([n.user.blockchain.chain for n in users.values()], key=len)
+            node.user.blockchain.chain = longest_chain
+
+    response = {'message': 'Conflict resolution completed'}
+    return jsonify(response), 200
+
