@@ -173,32 +173,33 @@ def add_transaction(user_id):
 		response = {'message': 'Sender is not equal to user_id'}
 		return jsonify(response), 400
 	
-# @app.route('/broadcast_transaction/<user_id>', methods=['POST'])
-# def broadcast_transaction(user_id):
-#     data = request.get_json()
+@app.route('/broadcast_transaction/<user_id>', methods=['POST'])
+def broadcast_transaction(user_id):
+    data = request.get_json()
 
-#     required_fields = ['sender', 'recipient', 'amount']
-#     if not all(field in data for field in required_fields):
-#         return 'Missing fields', 400
+    required_fields = ['sender', 'recipient', 'amount']
+    if not all(field in data for field in required_fields):
+        return 'Missing fields', 400
 
-#     user = users.get(user_id)
-#     sender = users.get(data['recipient'])
+    user = users.get(user_id)
+    sender = users.get(data['recipient'])
 	
-#     if not user or not sender:
-#         return jsonify({'message': 'User not found'}), 404
-#     if data['sender'] == user_id:
-#         user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
-#     else:
-#         return
+    if not user or not sender:
+        return jsonify({'message': 'User not found'}), 404
+    if data['sender'] == user_id:
+        user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
+    else:
+        return
     
-#     for user_id in user.node.get_known_nodes():
-#         if sender != user_id:  # Skip broadcasting to the user who initiated the transaction
-#             user_id.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
-#             print("\n\n" + user_id.blockchain.current_transaction)
+    for user_id in user.get_known_users():
+        if sender != user_id:  # Skip broadcasting to the user who initiated the transaction
+            user = users.get(user_id)
+            user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
+            print(user.blockchain.current_transactions)
 
-#     # Response to the client
-#     response = {'message': 'Transaction added and broadcasted successfully'}
-#     return jsonify(response), 201
+    # Response to the client
+    response = {'message': 'Transaction added and broadcasted successfully'}
+    return jsonify(response), 201
 
 @app.route('/get_current_transaction/<user_id>', methods=['GET'])
 def get_current_transaction(user_id):
