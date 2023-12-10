@@ -1,7 +1,18 @@
-curl -X POST -H "Content-Type: application/json" -d '{"node_id": "node1"}' http://127.0.0.1:5000/nodes/register
+Register a Node:
+curl -X POST -H "Content-Type: application/json" -d '{"node_id": "your_node_id"}' http://localhost:5000/nodes/register
 
-curl http://127.0.0.1:5000/mine_block/john123
+Mine a Block for a User:
+curl http://localhost:5000/mine_block/efe123
 
-curl -X POST -H "Content-Type: application/json" -d '{"sender":"Alice","recipient":"Bob","amount":10}' http://127.0.0.1:5000/add_transaction/john123
+Display Blockchain for a User:
+curl http://localhost:5000/get_chain/efe123
 
-curl http://127.0.0.1:5000/nodes/resolve
+Check Blockchain Validity for a User:
+curl http://localhost:5000/valid/efe123
+
+Add a Transaction:
+curl -X POST -H "Content-Type: application/json" -d '{"sender": "sender_id", "recipient": "recipient_id", "amount": 5}' http://localhost:5000/add_transaction/efe123
+
+Resolve Conflicts:
+curl http://localhost:5000/nodes/resolve
+

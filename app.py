@@ -46,10 +46,15 @@ class Blockchain:
 		return block
 
 	def create_transaction(self, sender, recipient, amount, public_key):
-		if public_key not in self.current_transactions:
-			self.current_transactions[public_key] = []
+		serialized_public_key = public_key.public_bytes(
+			encoding=serialization.Encoding.PEM,
+			format=serialization.PublicFormat.SubjectPublicKeyInfo
+		)
 
-		self.current_transactions[public_key].append({
+		if serialized_public_key not in self.current_transactions:
+			self.current_transactions[serialized_public_key] = []
+
+		self.current_transactions[serialized_public_key].append({
 			'sender': sender,
 			'recipient': recipient,
 			'amount': amount,
@@ -73,7 +78,16 @@ class Blockchain:
 		return new_proof
 
 	def hash(self, block):
-		encoded_block = json.dumps(block, sort_keys=True).encode()
+		def convert_keys_to_str(obj):
+			if isinstance(obj, bytes):
+				return obj.decode('utf-8')
+			elif isinstance(obj, dict):
+				return {convert_keys_to_str(k): convert_keys_to_str(v) for k, v in obj.items()}
+			elif isinstance(obj, list):
+				return [convert_keys_to_str(elem) for elem in obj]
+			else:
+				return obj
+		encoded_block = json.dumps(convert_keys_to_str(block), sort_keys=True).encode()
 		return hashlib.sha256(encoded_block).hexdigest()
 
 	def chain_valid(self, chain):
@@ -143,27 +157,41 @@ def mine_block(user_id):
 	previous_hash = user.blockchain.hash(previous_block)
 	user.blockchain.create_block(proof, previous_hash)
 
-	response = {'message': 'A block is MINED',
-					 'index': user.blockchain.last_block['index'],
-					 'timestamp': user.blockchain.last_block['timestamp'],
-					 'proof': user.blockchain.last_block['proof'],
-					 'previous_hash': user.blockchain.last_block['previous_hash'],
-					 'transactions': user.blockchain.last_block['transactions']
-					}
+	response = {
+    'message': 'A block is MINED',
+    'index': user.blockchain.last_block['index'],
+    'timestamp': user.blockchain.last_block['timestamp'],
+    'proof': user.blockchain.last_block['proof'],
+    'previous_hash': user.blockchain.last_block['previous_hash'],
+    'transactions': str(user.blockchain.last_block['transactions'])  # Convert bytes to string
+	}
 
 	return jsonify(response), 200
 
 
 @app.route('/get_chain/<user_id>', methods=['GET'])
 def display_chain(user_id):
-	user = users.get(user_id)
+    user = users.get(user_id)
 
-	if not user:
-		return jsonify({'message': 'User not found'}), 404
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
 
-	response = {'chain': user.blockchain.chain,
-					 'length': len(user.blockchain.chain)}
-	return jsonify(response), 200
+    def convert_keys_to_str(obj):
+        if isinstance(obj, bytes):
+            return obj.decode('utf-8')
+        elif isinstance(obj, dict):
+            return {convert_keys_to_str(k): convert_keys_to_str(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_keys_to_str(elem) for elem in obj]
+        else:
+            return obj
+
+    response = {
+        'chain': convert_keys_to_str(user.blockchain.chain),
+        'length': len(user.blockchain.chain)
+    }
+
+    return jsonify(response), 200
 
 
 @app.route('/valid/<user_id>', methods=['GET'])
@@ -190,12 +218,14 @@ def add_transaction(user_id):
 	if not all(field in data for field in required_fields):
 		return 'Missing fields', 400
 
-	for node_id, node in users.items():
-		node.user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'])
-	response = {'message': 'Transaction broadcasted to all nodes'}
+	user = users.get(user_id)
+
+	if not user:
+		return jsonify({'message': 'User not found'}), 404
+
+	user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
+	response = {'message': 'Transaction added to current transactions'}
 	return jsonify(response), 201
-	
-	
 	#user = users.get(user_id)
 
 	#if not user:
@@ -209,11 +239,11 @@ def add_transaction(user_id):
 @app.route('/nodes/resolve', methods=['GET'])
 def resolve_conflicts():
     for node_id, node in users.items():
-        node_chain = node.user.blockchain.chain
-        if not node.user.blockchain.chain_valid(node_chain):
+        node_chain = node.blockchain.chain
+        if not node.blockchain.chain_valid(node_chain):
             # Resolve conflicts by replacing the chain with the longest valid chain
-            longest_chain = max([n.user.blockchain.chain for n in users.values()], key=len)
-            node.user.blockchain.chain = longest_chain
+            longest_chain = max([n.blockchain.chain for n in users.values()], key=len)
+            node.blockchain.chain = longest_chain
 
     response = {'message': 'Conflict resolution completed'}
     return jsonify(response), 200
