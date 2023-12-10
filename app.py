@@ -12,7 +12,8 @@ class User:
     def __init__(self, user_id):
         self.private_key, self.public_key = self.generate_key_pair()
         self.blockchain = Blockchain()
-        self.node = Node(user_id)
+        self.known_users = []
+        self.user_id = user_id
 	
     def generate_key_pair(self):
         private_key = rsa.generate_private_key(
@@ -22,9 +23,14 @@ class User:
         )
         public_key = private_key.public_key()
         return private_key, public_key
+    
+    def add_known_user(self, user_id):
+        self.known_users.append(user_id)
+    
+    def get_known_users(self):
+        return list(self.known_users)
 	
 class Blockchain:
-
 	def __init__(self):
 		self.chain = []
 		self.current_transactions = {}
@@ -113,33 +119,19 @@ class Blockchain:
 			block_index += 1
 
 		return True
-
-class Node:
-	def __init__(self, node_id):
-		self.node_id = node_id
-		self.known_nodes = []
-		
-	def add_known_node(self, node_id):
-		self.known_nodes.append(node_id)
 	
-	def get_known_nodes(self):
-		return list(self.known_nodes)
-	
-
 
 app = Flask(__name__)
 users = {}
 
-efe = User(user_id="efe123")
-efe_id = "efe123"
-users[efe_id] = efe
+# efe = User(user_id="efe123")
+# efe_id = "efe123"
+# users[efe_id] = efe
 
-onur = User(user_id="onur123")
-onur_id = "onur123"
-users[onur_id] = onur
+# onur = User(user_id="onur123")
+# onur_id = "onur123"
+# users[onur_id] = onur
 
-
-# Example Node registration endpoint
 @app.route('/users/register', methods=['POST'])
 def register_user():
     data = request.get_json()
@@ -147,17 +139,14 @@ def register_user():
     if user_id:
         new_user = User(user_id)
         users[user_id] = new_user
-		# Update known nodes of the new node
-        new_node = Node(user_id)
-        users[user_id].node = new_node
 
         for existing_user_id, existing_user in users.items():
-            if isinstance(existing_user.node, Node) and existing_user_id != user_id:
-                existing_user.node.add_known_node(user_id)
+            if isinstance(existing_user, User) and existing_user_id != user_id:
+                existing_user.add_known_user(user_id)
         
         return jsonify({
             'message': f'User {user_id} registered successfully',
-            'known_nodes': new_user.node.get_known_nodes()
+            'known_users': new_user.get_known_users()
         }), 201
     else:
         return jsonify({'message': 'User registration failed. Provide a valid user_id.'}), 400
@@ -184,36 +173,39 @@ def add_transaction(user_id):
 		response = {'message': 'Sender is not equal to user_id'}
 		return jsonify(response), 400
 	
-@app.route('/broadcast_transaction/<user_id>', methods=['POST'])
-def broadcast_transaction(user_id):
-    data = request.get_json()
+# @app.route('/broadcast_transaction/<user_id>', methods=['POST'])
+# def broadcast_transaction(user_id):
+#     data = request.get_json()
 
-    required_fields = ['sender', 'recipient', 'amount']
-    if not all(field in data for field in required_fields):
-        return 'Missing fields', 400
+#     required_fields = ['sender', 'recipient', 'amount']
+#     if not all(field in data for field in required_fields):
+#         return 'Missing fields', 400
 
-    user = users.get(user_id)
-    sender = users.get(data['recipient'])
+#     user = users.get(user_id)
+#     sender = users.get(data['recipient'])
 	
-    if not user or not sender:
-        return jsonify({'message': 'User not found'}), 404
-    if data['sender'] == user_id:
-        user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
-    else:
-        return
+#     if not user or not sender:
+#         return jsonify({'message': 'User not found'}), 404
+#     if data['sender'] == user_id:
+#         user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
+#     else:
+#         return
     
-    for user_id in user.node.get_known_nodes():
-        if sender != user_id:  # Skip broadcasting to the user who initiated the transaction
-            user_id.node.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
-            print("\n\n" + user_id.blockchain.current_transaction)
+#     for user_id in user.node.get_known_nodes():
+#         if sender != user_id:  # Skip broadcasting to the user who initiated the transaction
+#             user_id.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
+#             print("\n\n" + user_id.blockchain.current_transaction)
 
-    # Response to the client
-    response = {'message': 'Transaction added and broadcasted successfully'}
-    return jsonify(response), 201
+#     # Response to the client
+#     response = {'message': 'Transaction added and broadcasted successfully'}
+#     return jsonify(response), 201
 
-@app.route('/get_current_transaction/<user_id>', methods=['POST'])
+@app.route('/get_current_transaction/<user_id>', methods=['GET'])
 def get_current_transaction(user_id):
 	user = users.get(user_id)
-	print(user.blockchain.create_transaction)
+	print(user.blockchain.current_transactions)
 	response = {'message': 'current list'}
 	return jsonify(response), 201
+
+if __name__ == '__main__':
+    app.run(host='localhost', port=5000, debug=True)
