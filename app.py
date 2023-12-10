@@ -11,7 +11,7 @@ class User:
 	def __init__(self):
 		self.private_key, self.public_key = self.generate_key_pair()
 		self.blockchain = Blockchain()
-
+		self.known_nodes = []
 	def generate_key_pair(self):
 		private_key = rsa.generate_private_key(
 				public_exponent=65537,
@@ -20,7 +20,11 @@ class User:
 		)
 		public_key = private_key.public_key()
 		return private_key, public_key
-
+	def add_known_node(self, node_id):
+		self.known_nodes.append(node_id)
+	
+	def get_known_nodes(self):
+		return list(self.known_nodes)
 
 class Blockchain:
 
@@ -28,7 +32,12 @@ class Blockchain:
 		self.chain = []
 		self.current_transactions = {}
 		self.generate_genesis_block()
-
+	def get_all_transactions(self):
+		all_transactions = []
+		for block in self.chain:
+			transactions = block['transactions']
+			all_transactions.extend(transactions)
+		return all_transactions
 	def generate_genesis_block(self):
 		self.create_block(proof=1, previous_hash='0')
 
@@ -111,9 +120,16 @@ class Blockchain:
 		return True
 
 class Node:
-    def __init__(self, node_id):
-        self.node_id = node_id
-        self.user = User()
+	def __init__(self, node_id):
+		self.node_id = node_id
+		self.user = User()
+		self.known_nodes = []
+	
+	def add_known_node(self, node_id):
+		self.known_nodes.append(node_id)
+	
+	def get_known_nodes(self):
+		return list(self.known_nodes)
 
 
 	
@@ -140,7 +156,15 @@ def register_node():
     if node_id:
         new_node = Node(node_id)
         users[node_id] = new_node.user
-        return jsonify({'message': f'Node {node_id} registered successfully'}), 201
+		# Update known nodes of the new node
+        for existing_node_id, existing_node in users.items():
+            if isinstance(existing_node, Node) and existing_node_id != node_id:
+                existing_node.add_known_node(node_id)
+
+        return jsonify({
+            'message': f'Node {node_id} registered successfully',
+            'known_nodes': new_node.get_known_nodes()
+        }), 201
     else:
         return jsonify({'message': 'Node registration failed. Provide a valid node_id.'}), 400
 	
@@ -245,6 +269,20 @@ def resolve_conflicts():
             longest_chain = max([n.blockchain.chain for n in users.values()], key=len)
             node.blockchain.chain = longest_chain
 
-    response = {'message': 'Conflict resolution completed'}
+    # Get the list of known nodes after resolving conflicts
+    known_nodes_after_resolution = list(users.values())[0].get_known_nodes()
+
+    response = {
+        'message': 'Conflict resolution completed',
+        'known_nodes': known_nodes_after_resolution
+    }
+
     return jsonify(response), 200
 
+all_transactions = {'transaction1': b'binary_data1', 'transaction2': b'binary_data2'}
+
+@app.route('/get_all_transactions/<user_id>', methods=['GET'])
+def get_all_transactions(user_id):
+    # Convert bytes data to a serializable format (e.g., hexadecimal)
+    serialized_transactions = {key: value.hex() for key, value in all_transactions.items()}
+    return jsonify({'all_transactions': serialized_transactions}), 200
