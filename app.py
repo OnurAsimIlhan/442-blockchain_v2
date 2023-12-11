@@ -194,7 +194,7 @@ def broadcast_transaction(user_id):
     for user_id in user.get_known_users():
         if sender != user_id:  # Skip broadcasting to the user who initiated the transaction
             user = users.get(user_id)
-            user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], user.public_key)
+            user.blockchain.create_transaction(data['sender'], data['recipient'], data['amount'], sender.public_key)
             print(user.blockchain.current_transactions)
 
     # Response to the client
@@ -207,6 +207,54 @@ def get_current_transaction(user_id):
 	print(user.blockchain.current_transactions)
 	response = {'message': 'current list'}
 	return jsonify(response), 201
+
+@app.route('/mine_block/<user_id>', methods=['GET'])
+def mine_block(user_id):
+	user = users.get(user_id)
+
+	if not user:
+		return jsonify({'message': 'User not found'}), 404
+
+	previous_block = user.blockchain.last_block
+	previous_proof = previous_block['proof']
+	proof = user.blockchain.proof_of_work(previous_proof)
+	previous_hash = user.blockchain.hash(previous_block)
+	user.blockchain.create_block(proof, previous_hash)
+
+	response = {
+    'message': 'A block is MINED',
+    'index': user.blockchain.last_block['index'],
+    'timestamp': user.blockchain.last_block['timestamp'],
+    'proof': user.blockchain.last_block['proof'],
+    'previous_hash': user.blockchain.last_block['previous_hash'],
+    'transactions': str(user.blockchain.last_block['transactions'])  # Convert bytes to string
+	}
+
+	return jsonify(response), 200
+
+@app.route('/get_chain/<user_id>', methods=['GET'])
+def display_chain(user_id):
+    user = users.get(user_id)
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    def convert_keys_to_str(obj):
+        if isinstance(obj, bytes):
+            return obj.decode('utf-8')
+        elif isinstance(obj, dict):
+            return {convert_keys_to_str(k): convert_keys_to_str(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_keys_to_str(elem) for elem in obj]
+        else:
+            return obj
+
+    response = {
+        'chain': convert_keys_to_str(user.blockchain.chain),
+        'length': len(user.blockchain.chain)
+    }
+
+    return jsonify(response), 200
 
 if __name__ == '__main__':
     app.run(host='localhost', port=5000, debug=True)
