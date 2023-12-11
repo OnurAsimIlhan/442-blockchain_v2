@@ -221,6 +221,17 @@ def mine_block(user_id):
 	previous_hash = user.blockchain.hash(previous_block)
 	user.blockchain.create_block(proof, previous_hash)
 
+	for user_id, user in users.items():
+		# Collect all chains for comparison
+		all_chains = [u.blockchain.chain for u in users.values()]
+
+		# Find the longest valid chain
+		longest_chain = max(filter(user.blockchain.chain_valid, all_chains), key=len, default=None)
+
+		# Update the user's chain with the longest valid chain
+		if longest_chain:
+			user.blockchain.chain = longest_chain
+   
 	response = {
     'message': 'A block is MINED',
     'index': user.blockchain.last_block['index'],
