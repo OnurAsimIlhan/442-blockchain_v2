@@ -32,47 +32,18 @@
 </head>
 
 <body>
-    <div class="container p-5">
-        <h1 class="text-center">CBA Coin All in One Page</h1>
-        <div class="row mt-6 ">
-            <div class="col-md-5 container ">
-                <div class="">
-                    <h2>Register User</h2>
-                    <form class="p-3" id="registerUserForm">
-                        <div class="form-group">
-                            <label for="username">Username</label>
-                            <input type="text" class="form-control" id="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                        <button type="button" class="btn btn-info float-right" onclick="registerUser()">Register
-                            User</button>
-                    </form>
-                </div>
+    <div class="container">
+        <h1>Simple Blockchain UI</h1>
 
-                <div class="mt-5">
-                    <h2>Register User</h2>
-                    <form class="p-3" id="registerUserForm">
-                        <div class="form-group">
-                            <label for="username">Username</label>
-                            <input type="text" class="form-control" id="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                        <button type="button" class="btn btn-info float-right" onclick="registerUser()">Register
-                            User</button>
-                    </form>
-                </div>
-
-
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h2>Mine New Block</h2>
+                <button type="button" class="btn btn-primary btn-block" onclick="mine()">Mine Block</button>
             </div>
-            <div class="col-md-5 container ">
+
+            <div class="col-md-6">
                 <h2>New Transaction</h2>
-                <form class="p-3" id="transactionForm">
+                <form id="transactionForm">
                     <!-- Sender Container -->
                     <div class="form-group">
                         <label for="sender">Sender</label>
@@ -110,37 +81,59 @@
                         <input type="number" class="form-control" id="amount" required>
                     </div>
                     <!-- Submit Transaction Button -->
-                    <button type="button text" class="btn btn-success float-right" onclick="newTransaction()">Submit
+                    <button type="button" class="btn btn-success btn-block" onclick="newTransaction()">Submit
                         Transaction</button>
                 </form>
-
-                <h2 class="mt-5">Mine New Block</h2>
-                <button type="button" class="btn btn-primary btn-block" onclick="mine()">Mine Block</button>
             </div>
-
         </div>
 
-        <div class="row mt-6">
-            <div class="col-md-5 container">
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h2>Register User</h2>
+                <form id="registerUserForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <button type="button" class="btn btn-info btn-block" onclick="registerUser()">Register User</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h2>Registered Users</h2>
+                <button type="button" class="btn btn-secondary btn-block" onclick="getUserList()">Get User List</button>
+                <pre id="userListOutput"></pre>
+
+                <!-- Display User Balances -->
+                <h2>User Balances</h2>
+                <button type="button" class="btn btn-info btn-block" onclick="getUserBalances()">Get User
+                    Balances</button>
+                <pre id="userBalancesOutput"></pre>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col">
                 <h2>Blockchain</h2>
                 <button type="button" class="btn btn-info btn-block" onclick="getChain()">Get Blockchain</button>
                 <pre id="chainOutput"></pre>
-            </div>
-            <div class="col-md-5 container">
+
                 <h2>Resolve Conflicts</h2>
                 <button type="button" class="btn btn-warning btn-block" onclick="resolveConflicts()">Resolve
                     Conflicts</button>
                 <pre id="resolveOutput"></pre>
             </div>
-
         </div>
-
     </div>
 
     <!-- Add Bootstrap JS and Popper.js scripts -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
     <!-- Add custom JavaScript -->
     <script>
         function mine() {
@@ -256,4 +249,5 @@
         }
     </script>
 </body>
+
 </html>
