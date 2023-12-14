@@ -23,7 +23,9 @@ class User:
         return private_key, public_key
 
     def add_known_user(self, user_id):
-        self.known_users.append(user_id)
+        if (user_id) not in self.known_users:
+            self.known_users.append((user_id))
+
 
     def get_known_users(self):
         return list(self.known_users)
@@ -137,6 +139,7 @@ users = {}
 ports = [5000]
 
 
+
 def broadcast_ports():
     # Broadcast the updated list to all known nodes
     for port in ports:
@@ -150,6 +153,7 @@ def broadcast_users():
         url = f"http://127.0.0.1:{port}/update_users"
         data = {"users": users}
         requests.post(url, json=data)
+
 def broadcast_new_user(new_user):
     # Broadcast the new port to all known nodes
     for port in ports:
@@ -252,9 +256,9 @@ def register_user():
     port_id = data.get("port_id")
     if user_id and port_id:
         new_user = User(user_id,port_id)
-        url_5000 = "http://127.0.0.1:5000/process_new_user"
-        data_5000 = {"port_id": port_id, "user_id": user_id}
-        requests.post(url_5000, json=data_5000)
+        
+
+        users[user_id] = new_user
         
 
         for existing_user_id, existing_user in users.items():

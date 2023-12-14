@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blockchain UI</title>
+    <!-- Add Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 50px;
+            border-radius: 8px;
+        }
+
+        h1, h2 {
+            color: #007bff;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Simple Blockchain UI</h1>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h2>Mine New Block</h2>
+                <button type="button" class="btn btn-primary btn-block" onclick="mine()">Mine Block</button>
+            </div>
+
+            <div class="col-md-6">
+                <h2>New Transaction</h2>
+                <form id="transactionForm">
+                    <div class="form-group">
+                        <label for="sender">Sender</label>
+                        <input type="text" class="form-control" id="sender" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient">Recipient</label>
+                        <input type="text" class="form-control" id="recipient" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <input type="number" class="form-control" id="amount" required>
+                    </div>
+                    <button type="button" class="btn btn-success btn-block" onclick="newTransaction()">Submit Transaction</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h2>Register User</h2>
+                <form id="registerUserForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <button type="button" class="btn btn-info btn-block" onclick="registerUser()">Register User</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h2>Registered Users</h2>
+                <button type="button" class="btn btn-secondary btn-block" onclick="getUserList()">Get User List</button>
+                <pre id="userListOutput"></pre>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col">
+                <h2>Blockchain</h2>
+                <button type="button" class="btn btn-info btn-block" onclick="getChain()">Get Blockchain</button>
+                <pre id="chainOutput"></pre>
+
+                <h2>Resolve Conflicts</h2>
+                <button type="button" class="btn btn-warning btn-block" onclick="resolveConflicts()">Resolve Conflicts</button>
+                <pre id="resolveOutput"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Bootstrap JS and Popper.js scripts -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Add custom JavaScript -->
+    <script>
+        function mine() {
+            fetch('/mine', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                });
+        }
+
+        function newTransaction() {
+            const sender = document.getElementById('sender').value;
+            const recipient = document.getElementById('recipient').value;
+            const amount = document.getElementById('amount').value;
+
+            fetch('/transactions/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sender: sender,
+                    recipient: recipient,
+                    amount: amount,
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                });
+        }
+
+        function registerUser() {
+            const username = document.getElementById('username').value;
+
+            fetch('/register_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                });
+        }
+
+        function getUserList() {
+            fetch('/get_user_list', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userListOutput').innerText = JSON.stringify(data, null, 2);
+                });
+        }
+
+        function getChain() {
+            fetch('/chain', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('chainOutput').innerText = JSON.stringify(data.chain, null, 2);
+                });
+        }
+
+        function resolveConflicts() {
+            fetch('/nodes/resolve', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('resolveOutput').innerText = JSON.stringify(data, null, 2);
+                });
+        }
+
+    </script>
+</body>
+
+</html>

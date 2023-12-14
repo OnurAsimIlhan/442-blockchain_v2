@@ -1,0 +1,23 @@
+Register Nodes:
+POST
+http://127.0.0.1:5000/nodes/register
+{
+    "nodes": ["http://127.0.0.1:5001", "http://127.0.0.1:5002"]
+}
+
+Create Transaction:
+POST
+http://127.0.0.1:5000/transactions/new
+{
+    "sender": "node1_address",
+    "recipient": "node2_address",
+    "amount": 10
+}
+
+Mine a Block:
+GET
+http://127.0.0.1:5000/mine
+
+Check Blockchain Validity:
+GET
+http://127.0.0.1:5000/nodes/resolve

@@ -1,17 +1,17 @@
 Register Port:
-curl -X POST -H "Content-Type: application/json" -d '{"port": 5002}' http://localhost:5002/register_port
+curl -X POST -H "Content-Type: application/json" -d '{"port": 5001}' http://localhost:5001/register_port
 
 --------------------------------------------------------------------
-curl -X POST -H "Content-Type: application/json" -d '{"user_id":"onur123", "port_id": 5002}' http://localhost:5002/users/register
+curl -X POST -H "Content-Type: application/json" -d '{"user_id":"onur123", "port_id": 5000}' http://localhost:5001/users/register
 
 Register a Node:
 curl -X POST -H "Content-Type: application/json" -d '{"user_id": "your_node_id"}' http://localhost:5000/users/register
 
 Mine a Block for a User:
-curl http://localhost:5000/mine_block/efe123
+curl http://localhost:5000/mine_block/onur123
 
 Display Blockchain for a User:
-curl http://localhost:5000/get_chain/efe123
+curl http://localhost:5001/get_chain/efe123
 
 Check Blockchain Validity for a User:
 curl http://localhost:5000/valid/efe123
