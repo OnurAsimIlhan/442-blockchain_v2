@@ -38,7 +38,7 @@ class Blockchain:
             self.users[username] = {
                 'id': user_id,
                 'password': password,
-                'balance': 100  # Initial balance is set to 0
+                'balance': 100  # Initial balance is set to 100
             }
             self.broadcast_user_list()  # Broadcast the updated user list
             return user_id
@@ -362,6 +362,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
-    
-
-    app.run(host='127.0.0.1', port=port)
+    app.run(host='0.0.0.0', port=port)
