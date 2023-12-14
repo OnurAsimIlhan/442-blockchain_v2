@@ -124,10 +124,7 @@ class Blockchain:
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
         }
-        for transaction in self.current_transactions:
-            sender = transaction['sender']
-            amount = transaction['amount']
-            self.users[sender]['balance'] -= amount
+        
 
         self.current_transactions = []
 
