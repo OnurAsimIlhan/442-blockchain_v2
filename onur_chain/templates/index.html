@@ -33,7 +33,7 @@
 <body>
     <div class="container">
         <h1>Simple Blockchain UI</h1>
-
+        
         <div class="row mt-4">
             <div class="col-md-6">
                 <h2>Mine New Block</h2>
@@ -75,6 +75,11 @@
                 <h2>Registered Users</h2>
                 <button type="button" class="btn btn-secondary btn-block" onclick="getUserList()">Get User List</button>
                 <pre id="userListOutput"></pre>
+            
+                <!-- Display User Balances -->
+                <h2>User Balances</h2>
+                <button type="button" class="btn btn-info btn-block" onclick="getUserBalances()">Get User Balances</button>
+                <pre id="userBalancesOutput"></pre>
             </div>
         </div>
 
@@ -169,7 +174,13 @@
                     document.getElementById('resolveOutput').innerText = JSON.stringify(data, null, 2);
                 });
         }
-
+        function getUserBalances() {
+        fetch('/get_user_balances', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('userBalancesOutput').innerText = JSON.stringify(data, null, 2);
+            });
+    }
     </script>
 </body>
 

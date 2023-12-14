@@ -46,7 +46,15 @@ class Blockchain:
 
     def get_user_balance(self, username):
         if username in self.users:
-            return self.users[username]['balance']
+            user_balance = 0
+
+            for block in self.chain:
+                for transaction in block['transactions']:
+                    if transaction['sender'] == username:
+                        user_balance -= transaction['amount']
+                    elif transaction['recipient'] == username:
+                        user_balance += transaction['amount']
+            return user_balance + self.users[username]['balance']
         else:
             return None  # User not found
         
@@ -101,6 +109,7 @@ class Blockchain:
 
         if new_chain:
             self.chain = new_chain
+            self.current_transactions = []
             return True
 
         return False
@@ -115,6 +124,10 @@ class Blockchain:
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
         }
+        for transaction in self.current_transactions:
+            sender = transaction['sender']
+            amount = transaction['amount']
+            self.users[sender]['balance'] -= amount
 
         self.current_transactions = []
 
@@ -138,7 +151,6 @@ class Blockchain:
                 'recipient': recipient,
                 'amount': amount,
             })
-
             return self.last_block['index'] + 1
 
         return 'Insufficient balance', 400
@@ -168,7 +180,11 @@ class Blockchain:
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
 
-
+def register_nodes_on_start(port):
+    if port != 5000:  # Assuming DEFAULT_PORT is the port where Flask is running
+        registration_url = f'http://127.0.0.1:5000/nodes/signin'
+        payload = {'url': f'http://127.0.0.1:{port}'}
+        requests.post(registration_url, json=payload)
 # Instantiate the Node
 app = Flask(__name__, template_folder='templates')
 
@@ -182,11 +198,7 @@ def mine():
     last_block = blockchain.last_block
     proof = blockchain.proof_of_work(last_block)
 
-    blockchain.new_transaction(
-        sender="0",
-        recipient=node_identifier,
-        amount=1,
-    )
+    
 
     previous_hash = blockchain.hash(last_block)
     block = blockchain.new_block(proof, previous_hash)
@@ -265,7 +277,15 @@ def consensus():
     return jsonify(response), 200
 @app.route('/')
 def index():
-    return render_template('index.html')
+    users = blockchain.get_user_list()
+
+    # Create a dictionary to store user balances
+    user_balances = {}
+    for user in users:
+        balance = blockchain.get_user_balance(user)
+        user_balances[user] = balance
+
+    return render_template('index.html', users=users, user_balances=user_balances)
 
 @app.route('/register_user', methods=['POST'])
 def register_user():
@@ -307,6 +327,18 @@ def update_user_list():
         blockchain.update_user_list(users)
 
     return jsonify({'message': 'User list updated'}), 200
+
+@app.route('/get_user_balances', methods=['GET'])
+def get_user_balances():
+    users = blockchain.get_user_list()
+    user_balances = {}
+
+    for user in users:
+        balance = blockchain.get_user_balance(user)
+        user_balances[user] = balance
+
+    response = {'user_balances': user_balances}
+    return jsonify(response), 200
 if __name__ == '__main__':
     from argparse import ArgumentParser
 
@@ -314,5 +346,6 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', type=int, help='port to listen on')
     args = parser.parse_args()
     port = args.port
+
 
     app.run(host='127.0.0.1', port=port)
