@@ -1,15 +1,12 @@
 from flask import Flask, request, jsonify
-from flask import app
-
 import requests
-
 app = Flask(__name__)
 
 active_nodes = set()
 
 
 def broadcast():
-   pass
+    pass
 
 
 @app.route("/nodes/signin", methods=["POST"])
@@ -23,12 +20,11 @@ def sign_nodes():
     active_nodes.add(url)
     
     for node in active_nodes:
-        if url != node:
-            payload = {
-                        "nodes": list(url)
-            }
-            requests.post(f'{node}/nodes/register', json=payload)
-    
+        payload = {
+            "nodes": list(active_nodes - {node})  # Exclude the current node from the set
+        }
+        requests.post(f'{node}/nodes/register', json=payload)
+
     response = {
         'message': f'Port {url} has been added'
     }
