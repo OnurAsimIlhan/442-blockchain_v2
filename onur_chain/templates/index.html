@@ -20,7 +20,8 @@
             border-radius: 8px;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             color: #007bff;
         }
 
@@ -33,7 +34,7 @@
 <body>
     <div class="container">
         <h1>Simple Blockchain UI</h1>
-        
+
         <div class="row mt-4">
             <div class="col-md-6">
                 <h2>Mine New Block</h2>
@@ -48,6 +49,10 @@
                         <input type="text" class="form-control" id="sender" required>
                     </div>
                     <div class="form-group">
+                        <label for="transactionPassword">Password</label>
+                        <input type="password" class="form-control" id="transactionPassword" required>
+                    </div>
+                    <div class="form-group">
                         <label for="recipient">Recipient</label>
                         <input type="text" class="form-control" id="recipient" required>
                     </div>
@@ -55,7 +60,9 @@
                         <label for="amount">Amount</label>
                         <input type="number" class="form-control" id="amount" required>
                     </div>
-                    <button type="button" class="btn btn-success btn-block" onclick="newTransaction()">Submit Transaction</button>
+
+                    <button type="button" class="btn btn-success btn-block" onclick="newTransaction()">Submit
+                        Transaction</button>
                 </form>
             </div>
         </div>
@@ -68,6 +75,10 @@
                         <label for="username">Username</label>
                         <input type="text" class="form-control" id="username" required>
                     </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
                     <button type="button" class="btn btn-info btn-block" onclick="registerUser()">Register User</button>
                 </form>
             </div>
@@ -75,10 +86,11 @@
                 <h2>Registered Users</h2>
                 <button type="button" class="btn btn-secondary btn-block" onclick="getUserList()">Get User List</button>
                 <pre id="userListOutput"></pre>
-            
+
                 <!-- Display User Balances -->
                 <h2>User Balances</h2>
-                <button type="button" class="btn btn-info btn-block" onclick="getUserBalances()">Get User Balances</button>
+                <button type="button" class="btn btn-info btn-block" onclick="getUserBalances()">Get User
+                    Balances</button>
                 <pre id="userBalancesOutput"></pre>
             </div>
         </div>
@@ -90,7 +102,8 @@
                 <pre id="chainOutput"></pre>
 
                 <h2>Resolve Conflicts</h2>
-                <button type="button" class="btn btn-warning btn-block" onclick="resolveConflicts()">Resolve Conflicts</button>
+                <button type="button" class="btn btn-warning btn-block" onclick="resolveConflicts()">Resolve
+                    Conflicts</button>
                 <pre id="resolveOutput"></pre>
             </div>
         </div>
@@ -115,6 +128,7 @@
             const sender = document.getElementById('sender').value;
             const recipient = document.getElementById('recipient').value;
             const amount = document.getElementById('amount').value;
+            const transactionPassword = document.getElementById('transactionPassword').value;
 
             fetch('/transactions/new', {
                 method: 'POST',
@@ -125,6 +139,7 @@
                     sender: sender,
                     recipient: recipient,
                     amount: amount,
+                    password: transactionPassword,
                 }),
             })
                 .then(response => response.json())
@@ -133,8 +148,10 @@
                 });
         }
 
+
         function registerUser() {
             const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
             fetch('/register_user', {
                 method: 'POST',
@@ -143,6 +160,7 @@
                 },
                 body: JSON.stringify({
                     username: username,
+                    password: password,
                 }),
             })
                 .then(response => response.json())
@@ -175,12 +193,12 @@
                 });
         }
         function getUserBalances() {
-        fetch('/get_user_balances', { method: 'GET' })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('userBalancesOutput').innerText = JSON.stringify(data, null, 2);
-            });
-    }
+            fetch('/get_user_balances', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userBalancesOutput').innerText = JSON.stringify(data, null, 2);
+                });
+        }
     </script>
 </body>
 

@@ -32,11 +32,12 @@ class Blockchain:
             payload = {'nodes': list(self.nodes)}
             requests.post(f'http://{node}/nodes/register', json=payload)
 
-    def register_user(self, username):
+    def register_user(self, username, password):
         if username not in self.users:
             user_id = str(uuid4())
             self.users[username] = {
                 'id': user_id,
+                'password': password,
                 'balance': 100  # Initial balance is set to 0
             }
             self.broadcast_user_list()  # Broadcast the updated user list
@@ -131,7 +132,7 @@ class Blockchain:
         self.chain.append(block)
         return block
 
-    def new_transaction(self, sender, recipient, amount):
+    def new_transaction(self, sender, recipient, amount,sender_password):
         sender_balance = self.get_user_balance(sender)
 
         if sender_balance is None:
@@ -142,15 +143,18 @@ class Blockchain:
         except ValueError:
             return 'Invalid amount', 400
 
-        if sender_balance >= amount:
-            self.current_transactions.append({
-                'sender': sender,
-                'recipient': recipient,
-                'amount': amount,
-            })
-            return self.last_block['index'] + 1
-
-        return 'Insufficient balance', 400
+        if sender_password == self.users[sender]['password']:
+            if sender_balance >= amount:
+                self.current_transactions.append({
+                    'sender': sender,
+                    'recipient': recipient,
+                    'amount': amount,
+                })
+                return self.last_block['index'] + 1
+            else:
+                return 'Insufficient balance', 400
+        else:
+            return 'Incorrect password', 401
 
     @property
     def last_block(self):
@@ -214,11 +218,11 @@ def mine():
 def new_transaction():
     values = request.get_json()
 
-    required = ['sender', 'recipient', 'amount']
+    required = ['sender', 'recipient', 'amount', 'password']
     if not all(k in values for k in required):
         return 'Missing values', 400
 
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'], values['password'])
 
     if index is not None:
         response = {'message': f'Transaction will be added to Block {index}'}
@@ -289,12 +293,14 @@ def register_user():
     global port
     values = request.get_json()
 
-    required = ['username']
+    required = ['username', 'password']
     if not all(k in values for k in required):
         return 'Missing values', 400
 
     username = values['username']
-    user_id = blockchain.register_user(username)
+    password = values['password']
+
+    user_id = blockchain.register_user(username, password)
 
     if user_id is not None:
         response = {'message': f'User {username} registered with ID: {user_id}'}
