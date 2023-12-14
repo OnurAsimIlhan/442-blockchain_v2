@@ -185,9 +185,19 @@ def register_nodes_on_start(port):
     if port != 5000:  # Assuming DEFAULT_PORT is the port where Flask is running
         registration_url = f'http://127.0.0.1:5000/nodes/signin'
         payload = {'url': f'http://127.0.0.1:{port}'}
-        requests.post(registration_url, json=payload)
+        
+        try:
+            requests.post(registration_url, json=payload)
+            print(f"Node on port {port} registered successfully.")
+        except requests.exceptions.ConnectionError:
+            print(f"Failed to register node on port {port}. Make sure the main server is running.")
+# ... (rest of your code)
+
+from flask_cors import CORS
+
 # Instantiate the Node
 app = Flask(__name__, template_folder='templates')
+CORS(app)  # Enable CORS for all routes
 
 node_identifier = str(uuid4()).replace('-', '')
 
@@ -278,6 +288,8 @@ def consensus():
     return jsonify(response), 200
 @app.route('/')
 def index():
+
+    register_nodes_on_start(port)
     users = blockchain.get_user_list()
 
     # Create a dictionary to store user balances
@@ -350,5 +362,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     port = args.port
 
+    
 
     app.run(host='127.0.0.1', port=port)

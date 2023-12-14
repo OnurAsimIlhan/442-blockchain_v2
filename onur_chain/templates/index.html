@@ -17,12 +17,13 @@
             background-color: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            margin-top: 30px;
+            margin-top: 20px;
+            
             border-radius: 8px;
         }
 
         h1, h2 {
-            color: #455869;
+            color: #37526d;
             margin-bottom: 20px;
         }
 
@@ -136,6 +137,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <!-- Add custom JavaScript -->
     <script>
+        
         function mine() {
             fetch('/mine', { method: 'GET' })
                 .then(response => response.json())
