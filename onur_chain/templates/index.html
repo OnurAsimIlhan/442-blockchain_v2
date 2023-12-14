@@ -44,23 +44,43 @@
             <div class="col-md-6">
                 <h2>New Transaction</h2>
                 <form id="transactionForm">
+                    <!-- Sender Container -->
                     <div class="form-group">
                         <label for="sender">Sender</label>
-                        <input type="text" class="form-control" id="sender" required>
+                        <div class="input-group">
+                            <select class="custom-select" id="sender" required>
+                                <!-- Options will be dynamically populated using JavaScript -->
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary"
+                                    onclick="populateUserList('sender')">Refresh Users</button>
+                            </div>
+                        </div>
                     </div>
+                    <!-- Transaction Password -->
                     <div class="form-group">
                         <label for="transactionPassword">Password</label>
                         <input type="password" class="form-control" id="transactionPassword" required>
                     </div>
+                    <!-- Recipient Container -->
                     <div class="form-group">
                         <label for="recipient">Recipient</label>
-                        <input type="text" class="form-control" id="recipient" required>
+                        <div class="input-group">
+                            <select class="custom-select" id="recipient" required>
+                                <!-- Options will be dynamically populated using JavaScript -->
+                            </select>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-primary"
+                                    onclick="populateUserList('recipient')">Refresh Users</button>
+                            </div>
+                        </div>
                     </div>
+                    <!-- Amount -->
                     <div class="form-group">
                         <label for="amount">Amount</label>
                         <input type="number" class="form-control" id="amount" required>
                     </div>
-
+                    <!-- Submit Transaction Button -->
                     <button type="button" class="btn btn-success btn-block" onclick="newTransaction()">Submit
                         Transaction</button>
                 </form>
@@ -123,7 +143,31 @@
                     alert(data.message);
                 });
         }
+        function populateUserList(targetInput) {
+            fetch('/get_user_list', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    const userList = data.users;
+                    const selectElement = document.getElementById(targetInput);
 
+                    // Clear existing options
+                    selectElement.innerHTML = '';
+
+                    // Add default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.text = `Select ${targetInput}`;
+                    selectElement.add(defaultOption);
+
+                    // Add users as options
+                    userList.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user;
+                        option.text = user;
+                        selectElement.add(option);
+                    });
+                });
+        }
         function newTransaction() {
             const sender = document.getElementById('sender').value;
             const recipient = document.getElementById('recipient').value;
@@ -169,11 +213,15 @@
                 });
         }
 
-        function getUserList() {
+        function getUserList(targetInput) {
             fetch('/get_user_list', { method: 'GET' })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('userListOutput').innerText = JSON.stringify(data, null, 2);
+                    const userList = data.users;
+                    const selectedUser = prompt(`Select ${targetInput}:\n${userList.join(', ')}`);
+                    if (selectedUser) {
+                        document.getElementById(targetInput).value = selectedUser;
+                    }
                 });
         }
 
