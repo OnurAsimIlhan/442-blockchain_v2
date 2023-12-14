@@ -16,7 +16,7 @@
             background-color: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            margin-top: 50px;
+            margin-top: 30px;
             border-radius: 8px;
         }
 
@@ -53,19 +53,10 @@
                 </div>
 
                 <div class="mt-5">
-                    <h2>Register User</h2>
-                    <form class="p-3" id="registerUserForm">
-                        <div class="form-group">
-                            <label for="username">Username</label>
-                            <input type="text" class="form-control" id="username" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                        <button type="button" class="btn btn-info float-right" onclick="registerUser()">Register
-                            User</button>
-                    </form>
+                    <h2>User Balances</h2>
+                <button type="button" class="btn btn-info btn-block" onclick="getUserBalances()">Get User
+                    Balances</button>
+                <pre id="userBalancesOutput"></pre>
                 </div>
 
 
@@ -82,7 +73,7 @@
                             </select>
                             <div class="input-group-append">
                                 <button type="button" class="btn btn-primary"
-                                    onclick="populateUserList('sender')">Refresh Users</button>
+                                    onclick="populateUserList('sender')">Refresh</button>
                             </div>
                         </div>
                     </div>
@@ -100,7 +91,7 @@
                             </select>
                             <div class="input-group-append">
                                 <button type="button" class="btn btn-primary"
-                                    onclick="populateUserList('recipient')">Refresh Users</button>
+                                    onclick="populateUserList('recipient')">Refresh</button>
                             </div>
                         </div>
                     </div>
