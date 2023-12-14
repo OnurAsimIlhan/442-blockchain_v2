@@ -13,7 +13,7 @@ class Blockchain:
         self.current_transactions = []
         self.chain = []
         self.nodes = set()
-        self.users = {}  
+        self.users = {}
         self.new_block(previous_hash='1', proof=100)
 
     def get_user_list(self):
@@ -26,6 +26,11 @@ class Blockchain:
             user_list = self.get_user_list()
             payload = {'users': user_list}
             requests.post(f'http://{node}/update_user_list', json=payload)
+    
+    def broadcast_nodes(self):
+        for node in self.nodes:
+            payload = {'nodes': list(self.nodes)}
+            requests.post(f'http://{node}/nodes/register', json=payload)
 
     def register_user(self, username):
         if username not in self.users:
@@ -237,6 +242,7 @@ def register_nodes():
         'message': 'New nodes have been added',
         'total_nodes': list(blockchain.nodes),
     }
+    print(blockchain.nodes)
     return jsonify(response), 201
 
 
@@ -304,7 +310,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
 
     parser = ArgumentParser()
-    parser.add_argument('-p', '--port', default=5000, type=int, help='port to listen on')
+    parser.add_argument('-p', '--port', type=int, help='port to listen on')
     args = parser.parse_args()
     port = args.port
 
